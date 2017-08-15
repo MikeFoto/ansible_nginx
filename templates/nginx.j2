@@ -1,0 +1,11 @@
+server {
+  listen {{ item.value.listnen_port }};
+  server_name {{ item.value.server_name }};
+  {{ item.value.server_option }}
+  location {{ item.value.location }} {
+    # remove this from the template
+    # proxy_pass  item.value.location_protocol :// item.value.location_host : item.value.location_port ;
+    #
+    {{ item.value.location_options }}
+  }
+}

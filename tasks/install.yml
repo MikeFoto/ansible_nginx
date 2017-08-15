@@ -1,0 +1,42 @@
+
+- name: install the latest version of required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ nginx.configuration.packages_list }}"
+  when:
+    r_nginx_dataload != True
+
+- name: Template Virtual Hosts
+  template:
+    src:   nginx.j2
+    dest:  "/etc/nginx/conf.d/{{ item.key }}.conf"
+    owner: root
+    group: root
+    mode:  0644
+    backup: yes
+  with_dict: "{{ nginx.configuration.virtual }}"
+  when:
+    item.value.enable  == True and
+    item.value.name  in server_names_to_create
+  notify:
+    - "restart {{ nginx.configuration.service_name }}"
+
+- service:
+    name:  "{{ nginx.configuration.service_name }}"
+    state: started
+  when:
+    r_nginx_dataload != True
+
+
+# TODO: Check if users already exist
+# TODO: Check if file already exist and not use -c option
+# TODO: move to data load
+- name: Add users
+  shell:
+    "htpasswd -bc {{ nginx.configuration.htpasswd_file }} {{ item.user }} {{ item.password }}"
+  with_items:
+    - "{{ nginx_data.encrypted.usernames }}"
+  when:
+    r_nginx_dataload == True

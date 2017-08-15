@@ -1,0 +1,4 @@
+# nginx role
+- include: "install.yml"
+
+- include: "tests.yml"
